@@ -2,6 +2,7 @@ import { Client, Account, Databases, Storage, Avatars } from 'appwrite'
 
 
 
+
 export const appwriteConfig = {
     url: import.meta.env.VITE_APPWRITE_URL,
     projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
@@ -10,7 +11,13 @@ export const appwriteConfig = {
     userCollectionId: import.meta.env.VITE_APPWRITE_USER_COLLECTION_ID,
     postCollectionId: import.meta.env.VITE_APPWRITE_POST_COLLECTION_ID,
     savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID
+};
 
+if (!appwriteConfig.url) {
+    throw new Error("VITE_APPWRITE_URL is not defined. Please check your .env.local file and restart the dev server.");
+}
+if (!appwriteConfig.projectId) {
+    throw new Error("VITE_APPWRITE_PROJECT_ID is not defined. Please check your .env.local file and restart the dev server.");
 }
 
 
