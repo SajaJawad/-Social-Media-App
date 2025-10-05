@@ -58,17 +58,42 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
 
-    useEffect(() => {
+//     useEffect(() => {
 
-        if (
-            localStorage.getItem('cookieFallback') === null ||
-            localStorage.getItem('cookieFallback') === '[]'
-        )
-    checkAuthUser()
-    navigate('/sign-in')
+//         if (
+//             localStorage.getItem('cookieFallback') === null ||
+//             localStorage.getItem('cookieFallback') === '[]'
+//         )
+//     checkAuthUser()
+//     navigate('/sign-in')
 
 
+// }, []);
+
+
+
+useEffect(() => {
+    const initAuth = async () => {
+        const cookieFallback = localStorage.getItem('cookieFallback');
+
+        if (cookieFallback === null || cookieFallback === '[]') {
+            const isAuth = await checkAuthUser();
+
+            if (!isAuth) {
+                navigate('/sign-in');
+            }
+        } else {
+            const isAuth = await checkAuthUser();
+
+            if (!isAuth) {
+                navigate('/sign-in');
+            }
+        }
+    }
+
+    initAuth();
 }, []);
+
 
 
 //     //تعديل جديد

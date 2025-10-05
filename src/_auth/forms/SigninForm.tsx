@@ -33,15 +33,6 @@ const SigninForm = () => {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof SigninValidation>) {
 
-    
-
-  try {
-    // حاول حذف session الحالية لتجنب 401
-    await account.deleteSession('current');
-  } catch (e) {
-    console.log("No active session to delete");
-  }
-
     const session = await signInAccount({
       email: values.email,
       password: values.password
