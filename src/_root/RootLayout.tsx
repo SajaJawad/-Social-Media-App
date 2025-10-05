@@ -1,5 +1,5 @@
 import Bottombar from "@/components/ui/shared/Bottombar"
-import LeftSideBar from "@/components/ui/shared/LeftSideBar"
+import LeftSideBar from "@/components/ui/shared/LeftSidebar"
 import Topbar from "@/components/ui/shared/Topbar"
 import { Outlet } from "react-router-dom"
 

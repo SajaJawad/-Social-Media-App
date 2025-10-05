@@ -49,15 +49,39 @@ export async function saveUserToDB(user: {
 }
 
 
-export async function signInAccount(user: { email: string, password: string }) {
-    try {
-        const session = await account.createEmailPasswordSession(user.email,user.password)
-        return session
-    } catch (error) {
-        console.log(error);
+// export async function signInAccount(user: { email: string, password: string }) {
+//     try {
+//         const session = await account.createEmailPasswordSession(user.email,user.password)
+//         return session
+//     } catch (error) {
+//         console.log(error);
 
+//     }
+// }
+
+
+export async function signInAccount(user: { email: string; password: string }) {
+  try {
+    try {
+      const current = await account.get(); 
+      if (current) {
+        await account.deleteSession("current");
+      }
+    } catch (err) {
     }
+
+    const session = await account.createEmailPasswordSession(
+      user.email,
+      user.password
+    );
+
+    return session;
+  } catch (error) {
+    console.error("Error signing in:", error);
+    throw error; 
 }
+}
+
 
 
 export async function getCurrentUser() {
