@@ -6,11 +6,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from 
 import { Input } from "@/components/ui/input"
 import { SigninValidation } from "@/lib/validation"
 import z from "zod"
-import Loader from "@/components/ui/shared/Loader"
 import { useToast } from "@/hooks/use-toast"
 import { useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
-import { account } from "@/lib/appwrite/config"
+import Loader from "@/components/shared/Loader"
 
 
 const SigninForm = () => {

@@ -5,11 +5,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from 
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from "@/lib/validation"
 import z from "zod"
-import Loader from "@/components/ui/shared/Loader"
 import { Link, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
+import { Loader } from "lucide-react"
 
 
 const SignupForm = () => {
