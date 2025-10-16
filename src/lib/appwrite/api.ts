@@ -1,58 +1,58 @@
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 import { ID } from 'appwrite'
 import { Query } from "appwrite";
-import {  INewPost, INewUser} from "@/types";
+import { INewPost, INewUser } from "@/types";
 
 export async function createUserAccount(user: INewUser) {
-    try {
-        const newAccount = await account.create(ID.unique(), user.email, user.password, user.name)
+  try {
+    const newAccount = await account.create(ID.unique(), user.email, user.password, user.name)
 
-        if (!newAccount) throw Error;
+    if (!newAccount) throw Error;
 
-        const avatarUrl = avatars.getInitials(user.name);
+    const avatarUrl = avatars.getInitials(user.name);
 
-        const newUser = await saveUserToDB({
-            accountId: newAccount.$id,
-            name: newAccount.name,
-            email: newAccount.email,
-            username: user.username,
-            imageUrl: avatarUrl ,
-        })
+    const newUser = await saveUserToDB({
+      accountId: newAccount.$id,
+      name: newAccount.name,
+      email: newAccount.email,
+      username: user.username,
+      imageUrl: avatarUrl,
+    })
 
-        return newAccount
-    }
-    catch (error) {
-        console.log(error)
-        return error
-    }
+    return newAccount
+  }
+  catch (error) {
+    console.log(error)
+    return error
+  }
 }
 
 
 export async function saveUserToDB(user: {
-    accountId: string,
-    email: string,
-    name: string,
-    imageUrl: URL | string,
-    username?: string
+  accountId: string,
+  email: string,
+  name: string,
+  imageUrl: URL | string,
+  username?: string
 }) {
-    try {
-        const newUser = await databases.createDocument(
-            appwriteConfig.databaseId,
-            appwriteConfig.userCollectionId,
-            ID.unique(),
-            user
-        )
-        return newUser;
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    const newUser = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      ID.unique(),
+      user
+    )
+    return newUser;
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 
 export async function signInAccount(user: { email: string; password: string }) {
   try {
     try {
-      const current = await account.get(); 
+      const current = await account.get();
       if (current) {
         await account.deleteSession("current");
       }
@@ -67,46 +67,46 @@ export async function signInAccount(user: { email: string; password: string }) {
     return session;
   } catch (error) {
     console.error("Error signing in:", error);
-    throw error; 
-}
+    throw error;
+  }
 }
 
 
 
 export async function getCurrentUser() {
-    try {
-        const currentAccount = await account.get();
+  try {
+    const currentAccount = await account.get();
 
-        if (!currentAccount) throw Error
+    if (!currentAccount) throw Error
 
-        const currentUser = await databases.listDocuments(
-            appwriteConfig.databaseId,
-            appwriteConfig.userCollectionId,
-            [Query.equal("accountId", currentAccount.$id)]
-        )
+    const currentUser = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.equal("accountId", currentAccount.$id)]
+    )
 
-        if (!currentUser) throw Error
+    if (!currentUser) throw Error
 
-        return currentUser.documents[0]
+    return currentUser.documents[0]
 
-        
 
-    } catch (error) {
-        console.log(error);
 
-    }
+  } catch (error) {
+    console.log(error);
+
+  }
 }
 
 
 
-export async function signOutAccount(){
-    try{
-        const session = await account.deleteSession("current")
-        return session;
-    }catch(error){
-        console.log(error);
-        
-    }
+export async function signOutAccount() {
+  try {
+    const session = await account.deleteSession("current")
+    return session;
+  } catch (error) {
+    console.log(error);
+
+  }
 }
 
 
@@ -121,6 +121,8 @@ export async function createPost(post: INewPost) {
 
     // Get file url
     const fileUrl = getFilePreview(uploadedFile.$id);
+
+
     if (!fileUrl) {
       await deleteFile(uploadedFile.$id);
       throw Error;
@@ -129,7 +131,7 @@ export async function createPost(post: INewPost) {
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
-    // Create post
+    // Save post
     const newPost = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
@@ -154,6 +156,7 @@ export async function createPost(post: INewPost) {
     console.log(error);
   }
 }
+
 
 //UPLOAD FILE
 export async function uploadFile(file: File) {
@@ -183,9 +186,12 @@ export function getFilePreview(fileId: string) {
       100
     );
 
-    if (!fileUrl) throw Error;
+    if (!fileUrl) {
+      deleteFile(fileId)
+      throw Error;
+    }
 
-    return fileUrl;
+    return fileUrl as string;
   } catch (error) {
     console.log(error);
   }
@@ -201,3 +207,84 @@ export async function deleteFile(fileId: string) {
     console.log(error);
   }
 }
+
+
+export async function getRecentPosts() {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.orderDesc('$createdAt'), Query.limit(20)],
+
+
+    );
+
+    return posts;
+  } catch (error) {
+    console.log('Error fetching posts:', error);
+    throw error;
+  }
+}
+
+export async function likePost(postId: string, likesArray: string[]){
+
+  try{
+    const updatedPost = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId,
+      {
+        likes: likesArray
+      }
+    )
+
+    if(!updatedPost) throw Error;
+    return updatedPost
+
+  } catch (error){
+    console.log(error);
+    
+  }
+}
+
+export async function SavePost(postId: string, userId: string[]){
+
+  try{
+    const updatedPost = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      ID.unique(),
+      {
+        user: userId,
+        post:postId
+      }
+    )
+
+    if(!updatedPost) throw Error;
+    return updatedPost
+
+  } catch (error){
+    console.log(error);
+    
+  }
+}
+
+export async function deleteSavedPost(savedRecordId: string){
+
+  try{
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      savedRecordId,
+    )
+
+    if(!statusCode) throw Error;
+    return {status: 'ok' }
+
+  } catch (error){
+    console.log(error);
+    
+  }
+}
+
+
