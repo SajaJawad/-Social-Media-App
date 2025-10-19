@@ -1,7 +1,6 @@
 import { useUserContext } from "@/context/AuthContext";
 import { multiFormatDateString } from "@/lib/utils";
 import { Models } from "appwrite"
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import PostStats from "./PostStats";
 
@@ -13,7 +12,6 @@ type PostCardProps = {
 const PostCard = ({ post }: PostCardProps) => {
     const { user } = useUserContext()
 
-    console.log(post);
     
 
 
