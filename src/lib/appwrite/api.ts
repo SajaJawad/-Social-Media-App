@@ -73,31 +73,53 @@ export async function signInAccount(user: { email: string; password: string }) {
 
 
 
+// export async function getCurrentUser() {
+//   try {
+//     const currentAccount = await account.get();
+
+//     if (!currentAccount) throw Error
+
+//     const currentUser = await databases.listDocuments(
+//       appwriteConfig.databaseId,
+//       appwriteConfig.userCollectionId,
+//       [Query.equal("accountId", currentAccount.$id)]
+//     )
+
+//     if (!currentUser) throw Error
+
+//     return currentUser.documents[0]
+
+
+
+//   } catch (error) {
+//     console.log(error);
+
+//   }
+// }
+
+
 export async function getCurrentUser() {
   try {
     const currentAccount = await account.get();
+    if (!currentAccount) throw new Error("No account found");
 
-    if (!currentAccount) throw Error
-
-    const currentUser = await databases.listDocuments(
+    const response = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      [Query.equal("accountId", currentAccount.$id)]
-    )
+      [
+        Query.equal("accountId", currentAccount.$id),
+        Query.limit(1),
+        Query.select(["*", "save.*", "save.post.*"]) // ✅ اجلب البيانات مع العلاقات
+      ]
+    );
 
-    if (!currentUser) throw Error
-
-    return currentUser.documents[0]
-
-
-
+    const user = response.documents[0];
+    return user;
   } catch (error) {
-    console.log(error);
-
+    console.error("Error getting current user:", error);
+    return null;
   }
 }
-
-
 
 export async function signOutAccount() {
   try {
@@ -214,9 +236,11 @@ export async function getRecentPosts() {
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.orderDesc('$createdAt'), Query.limit(20)],
-
-
+      [
+        Query.orderDesc('$createdAt'),
+        Query.limit(20),
+        Query.select(["*", "creator.*", "likes.*"]) // ✅ اجلب معلومات اللايكات أيضًا
+      ]
     );
 
     return posts;
@@ -226,28 +250,46 @@ export async function getRecentPosts() {
   }
 }
 
-export async function likePost(postId: string, likesArray: string[]){
 
-  try{
+
+
+// export async function likePost(postId: string, likesArray: string[]) {
+//   try {
+//     const updatedPost = await databases.updateDocument(
+//       appwriteConfig.databaseId,
+//       appwriteConfig.postCollectionId,
+//       postId,
+//       {
+//         likes: likesArray,
+//       }
+//     );
+
+//     if (!updatedPost) throw Error;
+
+//     return updatedPost;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+export async function likePost(postId: string, likesArray: string[]) {
+  try {
     const updatedPost = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       postId,
-      {
-        likes: likesArray
-      }
-    )
+      { likes: likesArray }
+    );
 
-    if(!updatedPost) throw Error;
-    return updatedPost
-
-  } catch (error){
-    console.log(error);
-    
+    return updatedPost; // ✅ مهم جدًا
+  } catch (error) {
+    console.error("Error liking post:", error);
+    throw error;
   }
 }
 
-export async function SavePost(postId: string, userId: string[]){
+
+export async function savePost(postId: string, userId: string){
 
   try{
     const updatedPost = await databases.createDocument(
@@ -268,6 +310,8 @@ export async function SavePost(postId: string, userId: string[]){
     
   }
 }
+
+
 
 export async function deleteSavedPost(savedRecordId: string){
 
