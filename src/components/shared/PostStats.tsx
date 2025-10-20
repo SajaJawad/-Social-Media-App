@@ -1,10 +1,10 @@
+
 import { Models } from "appwrite";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 import { checkIsLiked } from "@/lib/utils";
 import { useDeleteSavedPost, useGetCurrentUser, useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
-import { Loader } from "lucide-react";
 
 
 type PostStatsProps = {
@@ -14,23 +14,19 @@ type PostStatsProps = {
 
 const PostStats = ({ post, userId }: PostStatsProps) => {
   const location = useLocation();
-//   const likesList = post.likes.map((user: Models.Document) => user.$id);
-
-const likesList = Array.isArray(post.likes)
-  ? post.likes.map((user: any) => user.$id || user)
-  : [];
+  const likesList = post.likes.map((user: Models.Document) => user.$id);
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
 
   const { mutate: likePost } = useLikePost();
-  const { mutate: savePost , isPending: isSavingPost} = useSavePost();
-  const { mutate: deleteSavePost , isPending: isDeletingSaved } = useDeleteSavedPost();
+  const { mutate: savePost } = useSavePost();
+  const { mutate: deleteSavePost } = useDeleteSavedPost();
 
   const { data: currentUser } = useGetCurrentUser();
 
   const savedPostRecord = currentUser?.save.find(
-    (record: Models.Document) => record.post?.$id === post.$id
+    (record: Models.Document) => record.post.$id === post.$id
   );
 
   useEffect(() => {
@@ -50,9 +46,8 @@ const likesList = Array.isArray(post.likes)
       likesArray.push(userId);
     }
 
-likePost({ postId: post.$id, likesArray }, {
-  onSuccess: (updatedPost) => setLikes(updatedPost.likes),
-});
+    setLikes(likesArray);
+    likePost({ postId: post.$id, likesArray });
   };
 
   const handleSavePost = (
@@ -93,14 +88,14 @@ likePost({ postId: post.$id, likesArray }, {
       </div>
 
       <div className="flex gap-2">
-        {isSavingPost || isDeletingSaved ? <Loader/> : <img
+        <img
           src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
           alt="share"
           width={20}
           height={20}
           className="cursor-pointer"
           onClick={(e) => handleSavePost(e)}
-        />}
+        />
       </div>
     </div>
   );

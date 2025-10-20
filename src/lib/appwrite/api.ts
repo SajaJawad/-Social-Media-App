@@ -287,17 +287,32 @@ export async function deleteSavedPost(savedRecordId: string){
 }
 
 
-export async function getPostById(postId: string){
+// export async function getPostById(postId: string){
+//   try {
+//     const post = await databases.getDocument(
+//       appwriteConfig.databaseId,
+//       appwriteConfig.postCollectionId,
+//       postId
+//     )
+//     return post
+//   } catch (error) {
+//     console.log(error);
+    
+//   }
+// }
+
+export async function getPostById(postId: string) {
   try {
     const post = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      postId
-    )
-    return post
+      postId,
+      [Query.select(["*", "creator.*", "likes.*"])] // ✅ جلب العلاقات كاملة
+    );
+
+    return post;
   } catch (error) {
-    console.log(error);
-    
+    console.log("Error fetching post by ID:", error);
   }
 }
 
